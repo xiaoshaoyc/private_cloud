@@ -1,0 +1,6 @@
+caddy2/config/*
+caddy2/data/*
+!caddy2/config/.gitkeep
+!caddy2/data/.gitkeep
+cloudreve/cloudreve.db
+!.gitkeep

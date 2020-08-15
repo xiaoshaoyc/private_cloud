@@ -1,0 +1,75 @@
+version: '3'
+  
+services:
+  aria2:
+    image: p3terx/aria2-pro
+    container_name: aria2-pro
+    expose:
+      - 6800
+    ports:
+      - "6888:6888"
+      - "6888:6888/udp"
+    environment:
+      - PUID=$UID
+      - PGID=$GID
+      - RPC_SECRET=highsai
+      - RPC_PORT=6800
+      - LISTEN_PORT=6888
+    volumes:
+      - ./aria2-config:/config
+      - ./downloads:/downloads
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "5"
+    restart: "unless-stopped"
+
+  cloudreve:
+    image: alpine:3.12
+    container_name: cloudreve
+    command: cd cloudreve && ./cloudreve
+    expose:
+      - 5212
+    volumes:
+      - ./cloudreve/:/cloudreve/
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "5"
+    restart: "unless-stopped"
+    depends_on:
+      - aria2
+      - redis
+
+  caddy2:
+    image: caddy:2.1.1-alpine
+    container-name: caddy2
+    ports:
+      - "2052:2052"
+      - "8080:8080"
+    volumes:
+      - ./caddy2/data/:/data/
+      - ./caddy2/config:/config/
+      - ./Caddyfile:/etc/caddy/Caddyfile
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "5"
+    restart: "unless-stopped"
+    depends_on:
+      - cloudreve
+
+  redis:
+    image: redis:6.0-alpine
+    container-name: redis
+    expose:
+      - 6379
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "5"
+    restart: "unless-stopped"
