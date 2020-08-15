@@ -10,14 +10,14 @@ services:
       - "6888:6888"
       - "6888:6888/udp"
     environment:
-      - PUID=$UID
-      - PGID=$GID
+      - PUID=0
+      - PGID=0
       - RPC_SECRET=highsai
       - RPC_PORT=6800
       - LISTEN_PORT=6888
     volumes:
-      - ./aria2-config:/config
-      - ./downloads:/downloads
+      - ./aria2/config/:/config/
+      - aria2-donwloads/:/downloads/
     logging:
       driver: "json-file"
       options:
@@ -26,13 +26,14 @@ services:
     restart: "unless-stopped"
 
   cloudreve:
-    image: alpine:3.12
+    build: ./cloudreve
     container_name: cloudreve
-    command: cd cloudreve && ./cloudreve
+    command: /cloudreve/cloudreve
     expose:
       - 5212
     volumes:
       - ./cloudreve/:/cloudreve/
+      - aria2-donwloads:/downloads/
     logging:
       driver: "json-file"
       options:
@@ -45,14 +46,14 @@ services:
 
   caddy2:
     image: caddy:2.1.1-alpine
-    container-name: caddy2
+    container_name: caddy2
     ports:
       - "2052:2052"
       - "8080:8080"
     volumes:
       - ./caddy2/data/:/data/
       - ./caddy2/config:/config/
-      - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./caddy2/Caddyfile:/etc/caddy/Caddyfile
     logging:
       driver: "json-file"
       options:
@@ -64,7 +65,7 @@ services:
 
   redis:
     image: redis:6.0-alpine
-    container-name: redis
+    container_name: redis
     expose:
       - 6379
     logging:
@@ -73,3 +74,6 @@ services:
         max-size: "200k"
         max-file: "5"
     restart: "unless-stopped"
+
+volumes:
+  aria2-donwloads:
